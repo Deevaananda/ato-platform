@@ -1,49 +1,77 @@
-# Adaptive Timetabling Optimizer (ATO)
+# 🎓 ATO Platform - Automatic Timetable Organization System
 
-An intelligent timetabling system for educational institutions built with Next.js, React, and TypeScript.
+[![Next.js](https://img.shields.io/badge/Next.js-14.0-black?style=flat-square&logo=next.js)](https://nextjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue?style=flat-square&logo=typescript)](https://www.typescriptlang.org/)
+[![TailwindCSS](https://img.shields.io/badge/Tailwind-3.0-38bdf8?style=flat-square&logo=tailwindcss)](https://tailwindcss.com/)
+[![Prisma](https://img.shields.io/badge/Prisma-ORM-2D3748?style=flat-square&logo=prisma)](https://prisma.io/)
 
-## Features
+A comprehensive **university timetable management system** built with modern web technologies. ATO Platform uses advanced genetic algorithms to automatically generate optimized timetables while handling complex constraints and resource management.
 
-- **Resource Management**: Manage classrooms, faculty, laboratories, and subjects
-- **Constraint Management**: Define time slots, preferences, and scheduling constraints
-- **Timetable Generation**: Generate optimized timetables using advanced algorithms
-- **Workflow Management**: Approval workflows with role-based access control
-- **Analytics & Reports**: Comprehensive reporting and analytics dashboard
-- **Multi-role Support**: Admin, Faculty, Coordinator, and Viewer roles
+## ✨ Key Features
 
-## Tech Stack
+### 🧬 **Intelligent Timetable Generation**
+- **Genetic Algorithm Optimization**: Advanced AI-powered scheduling
+- **Multi-objective Optimization**: Balances conflicts, utilization, and workload
+- **Real-time Progress Tracking**: Live generation updates with metrics
+- **Multiple Solutions**: Provides ranked optimization options
+- **Conflict Detection**: Comprehensive constraint violation analysis
 
-- **Frontend**: Next.js 14, React 19, TypeScript
-- **Styling**: Tailwind CSS v4, Radix UI components
-- **Authentication**: Custom JWT-based authentication
+### 🏫 **Complete Resource Management**
+- **Classroom Management**: Room capacity, type, and facilities tracking
+- **Faculty Management**: Instructor profiles with department assignments
+- **Subject Management**: Course credits, prerequisites, and scheduling
+- **Department Management**: Multi-department support with hierarchies
+
+### 🔐 **Advanced Authentication & Access Control**
+- **Role-based Access**: Admin, Faculty, and Coordinator roles
+- **Secure Sessions**: JWT-based authentication system
+- **Protected Routes**: Middleware-based route protection
+
+### 📊 **Analytics & Reporting**
+- **Performance Dashboard**: Real-time metrics and KPIs
+- **Infeasibility Analysis**: Detailed conflict reports and suggestions
+- **Utilization Reports**: Room and faculty efficiency tracking
+- **Constraint Monitoring**: Violation detection and resolution
+
+### 🎯 **NEP 2020 Compliance**
+- **Multidisciplinary Support**: Cross-department course scheduling
+- **Flexible Curricula**: Elective and core course management
+- **Choice-based Credit System**: CBCS compliant structure
+
+## 🛠️ Technology Stack
+
+- **Frontend**: Next.js 14 with App Router, React 18, TypeScript
+- **Styling**: TailwindCSS, shadcn/ui components
+- **Database**: Prisma ORM with SQLite (easily configurable)
+- **Authentication**: Custom JWT implementation
+- **Algorithms**: Custom genetic algorithm for optimization
 - **State Management**: React hooks and context
-- **Charts**: Recharts for data visualization
-- **Icons**: Lucide React
+- **UI/UX**: Responsive design with dark/light theme support
 
-## Getting Started
+## 🚀 Quick Start
 
 ### Prerequisites
-
-- Node.js 18.0.0 or higher
-- npm 8.0.0 or higher
+- Node.js 18+ 
+- npm or pnpm
+- Git
 
 ### Installation
 
-1. Clone the repository:
-\`\`\`bash
-git clone <repository-url>
-cd adaptive-timetabling-optimizer
-\`\`\`
+```bash
+# Clone the repository
+git clone https://github.com/yourusername/ato-platform.git
+cd ato-platform
 
-2. Install dependencies:
-\`\`\`bash
+# Install dependencies
 npm install
-\`\`\`
+# or
+pnpm install
 
-3. Run the development server:
-\`\`\`bash
+# Run development server
 npm run dev
-\`\`\`
+# or 
+pnpm dev
+```
 
 4. Open [http://localhost:3000](http://localhost:3000) in your browser.
 
@@ -51,132 +79,195 @@ npm run dev
 
 For testing purposes, you can use these demo accounts:
 
-- **Admin**: admin@university.edu / password
-- **Faculty**: faculty@university.edu / password
-- **Coordinator**: coordinator@university.edu / password
+**Admin Access:**
+- Email: `admin@example.com`
+- Password: `admin123`
 
-## Project Structure
+**Faculty Access:**  
+- Email: `faculty@example.com`
+- Password: `faculty123`
 
-\`\`\`
-├── app/                    # Next.js app directory
-│   ├── api/               # API routes
-│   ├── dashboard/         # Dashboard pages
-│   └── login/            # Authentication pages
-├── components/            # React components
-│   ├── auth/             # Authentication components
-│   ├── constraints/      # Constraint management
-│   ├── layout/           # Layout components
-│   ├── resources/        # Resource management
-│   ├── timetables/       # Timetable components
-│   ├── ui/               # UI components (shadcn/ui)
-│   └── workflow/         # Workflow components
-├── lib/                  # Utility libraries
-└── public/               # Static assets
-\`\`\`
+## 📖 Usage Guide
 
-## Development
+### 1. **Resource Setup**
+- Navigate to **Resources** tab
+- Add departments, classrooms, and faculty
+- Configure room capacities and facilities
 
-### Available Scripts
+### 2. **Subject Configuration**
+- Go to **Subjects** section  
+- Add courses with credits and prerequisites
+- Assign to appropriate departments
 
-- `npm run dev` - Start development server
-- `npm run build` - Build for production
-- `npm run start` - Start production server
-- `npm run lint` - Run ESLint
-- `npm run type-check` - Run TypeScript type checking
-- `npm run format` - Format code with Prettier
+### 3. **Timetable Generation**
+- Visit **Timetables** tab
+- Configure generation parameters:
+  - Select department and semester
+  - Set batch size and optimization goals
+  - Adjust algorithm settings (iterations, time limits)
+- Click **"Generate Timetable Options"**
+- Review and select from optimized solutions
 
-### Adding New Features
+### 4. **Analysis & Reports**
+- Access **Reports** for performance analytics
+- Use **Infeasibility Analyzer** for conflict detection
+- Monitor resource utilization and faculty workload
 
-1. **Components**: Add new components in the appropriate directory under `components/`
-2. **Pages**: Add new pages in the `app/` directory following Next.js App Router conventions
-3. **API Routes**: Add API endpoints in `app/api/`
-4. **Types**: Define TypeScript interfaces in component files or create shared types in `lib/`
+## 🏗️ Architecture Overview
 
-## Backend Integration
+```
+ATO Platform Architecture
+├── Frontend (Next.js)
+│   ├── Pages & Components
+│   ├── Authentication Middleware  
+│   └── UI/UX Layer
+├── Backend APIs
+│   ├── Resource Management
+│   ├── Authentication Service
+│   └── Optimization Engine
+├── Database Layer
+│   ├── Prisma ORM
+│   ├── Resource Models
+│   └── Constraint Storage
+└── Optimization Engine
+    ├── Genetic Algorithm
+    ├── Constraint Solver
+    └── Performance Analytics
+```
 
-This project is currently set up with mock data and demo authentication. To integrate with a real backend:
+## 🔧 Configuration
 
-### Database Integration
+### Database Setup
+The platform uses Prisma with SQLite by default. To use PostgreSQL or MySQL:
 
-1. **Choose a Database**: PostgreSQL, MySQL, or MongoDB
-2. **ORM/Query Builder**: Prisma, Drizzle, or direct SQL
-3. **Replace Mock Data**: Update components to fetch from API endpoints
-4. **Environment Variables**: Add database connection strings
+1. Update `DATABASE_URL` in `.env`
+2. Modify `schema.prisma` provider
+3. Run `npx prisma migrate dev`
 
-### Authentication
+### Environment Variables
+Create a `.env.local` file:
 
-1. **Replace Mock Auth**: Integrate with your authentication provider
-2. **Session Management**: Implement proper session/token management
-3. **Role-Based Access**: Ensure proper authorization checks
+```env
+# Database
+DATABASE_URL="file:./dev.db"
 
-### API Endpoints
-
-Replace the current mock API routes with real implementations:
-
-- `/api/auth/*` - Authentication endpoints
-- `/api/resources/*` - Resource management
-- `/api/timetables/*` - Timetable operations
-- `/api/constraints/*` - Constraint management
-
-## Deployment
-
-### Vercel (Recommended)
-
-1. Push your code to GitHub
-2. Connect your repository to Vercel
-3. Configure environment variables
-4. Deploy
-
-### Other Platforms
-
-The application can be deployed to any platform that supports Next.js:
-
-- Netlify
-- Railway
-- DigitalOcean App Platform
-- AWS Amplify
-
-## Environment Variables
-
-Create a `.env.local` file in the root directory:
-
-\`\`\`env
-# Database (when integrating with real backend)
-DATABASE_URL="your-database-url"
-
-# Authentication (when using external auth)
+# Authentication  
 NEXTAUTH_SECRET="your-secret-key"
 NEXTAUTH_URL="http://localhost:3000"
 
-# Other integrations
-# Add your API keys and configuration here
-\`\`\`
+# Optional: External integrations
+# EMAIL_SERVER_HOST="smtp.example.com"
+# EMAIL_SERVER_PORT="587"
+```
 
-## Contributing
+## 🤝 Production Deployment
 
+### Vercel (Recommended)
+```bash
+# Deploy to Vercel
+npx vercel
+
+# Set environment variables in Vercel dashboard
+# Update database to production provider
+```
+
+### Docker
+```bash
+# Build Docker image
+docker build -t ato-platform .
+
+# Run container
+docker run -p 3000:3000 ato-platform
+```
+
+## 📝 API Documentation
+
+### Authentication Endpoints
+- `POST /api/auth/login` - User authentication
+- `POST /api/auth/logout` - Session termination  
+- `GET /api/auth/me` - Current user info
+
+### Resource Management
+- `GET/POST /api/departments` - Department CRUD
+- `GET/POST /api/courses` - Course management
+- `GET/POST /api/instructors` - Faculty management
+- `GET/POST /api/rooms` - Classroom management
+
+### Analytics
+- `GET /api/dashboard/stats` - System statistics
+- `POST /api/optimization/generate` - Timetable generation
+
+## 🧪 Testing
+
+The platform includes comprehensive testing coverage:
+
+- **Unit Tests**: Component and utility testing
+- **Integration Tests**: API endpoint validation  
+- **E2E Tests**: Complete user flow testing
+- **Performance Tests**: Optimization algorithm benchmarks
+
+```bash
+# Run tests
+npm test
+
+# Run with coverage
+npm run test:coverage
+```
+
+## 🐛 Known Issues & Roadmap
+
+### Current Limitations
+- Single-tenant architecture (multi-tenant planned)
+- Limited external calendar integration
+- Basic reporting (advanced analytics in development)
+
+### Upcoming Features
+- 📱 Mobile application
+- 🔗 LMS integrations (Moodle, Canvas)
+- 📧 Email notifications
+- 📊 Advanced analytics dashboard
+- 🌐 Multi-language support
+
+## 🤝 Contributing
+
+We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
+
+### Development Setup
 1. Fork the repository
-2. Create a feature branch: `git checkout -b feature/new-feature`
-3. Commit your changes: `git commit -am 'Add new feature'`
-4. Push to the branch: `git push origin feature/new-feature`
-5. Submit a pull request
+2. Create feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit changes (`git commit -m 'Add amazing feature'`)
+4. Push branch (`git push origin feature/amazing-feature`)
+5. Open Pull Request
 
-## License
+## 📄 License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## Support
+## 👥 Team
 
-For support and questions:
+- **Lead Developer**: Advanced timetabling algorithms and system architecture
+- **Algorithm Design**: Genetic algorithm optimization implementation
+- **UI/UX Design**: Modern, accessible interface design
 
-1. Check the documentation
-2. Search existing issues
-3. Create a new issue with detailed information
+## 🙏 Acknowledgments
 
-## Roadmap
+- **shadcn/ui** for beautiful React components
+- **Next.js** team for the amazing framework
+- **Prisma** for excellent database tooling
+- **TailwindCSS** for utility-first styling
+- **Lucide Icons** for consistent iconography
 
-- [ ] Real-time collaboration features
-- [ ] Advanced optimization algorithms
-- [ ] Mobile application
-- [ ] Integration with popular LMS platforms
-- [ ] Advanced analytics and reporting
-- [ ] Multi-language support
+## 📞 Support
+
+- 🐛 Issues: [GitHub Issues](https://github.com/yourusername/ato-platform/issues)
+- 💬 Discussions: [GitHub Discussions](https://github.com/yourusername/ato-platform/discussions)
+
+---
+
+<p align="center">
+  <strong>Built with ❤️ for educational institutions worldwide</strong>
+</p>
+
+<p align="center">
+  <a href="#-ato-platform---automatic-timetable-organization-system">🔝 Back to top</a>
+</p>
