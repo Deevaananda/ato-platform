@@ -1,0 +1,271 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Department {
+  id          String   @id @default(cuid())
+  name        String
+  code        String   @unique
+  head        String?
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  courses     Course[]
+  instructors Instructor[]
+}
+
+model Course {
+  id            String      @id @default(cuid())
+  code          String      @unique
+  name          String
+  departmentId  String
+  credits       Int
+  semester      Int
+  year          Int
+  type          CourseType  @default(CORE)
+  description   String?
+  prerequisites String?    // JSON string array of course IDs
+  maxStudents   Int?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  // Relations
+  department Department @relation(fields: [departmentId], references: [id], onDelete: Cascade)
+  classes    Class[]
+  
+  @@map("courses")
+}
+
+model Instructor {
+  id                 String            @id @default(cuid())
+  employeeId         String            @unique
+  name               String
+  email              String            @unique
+  departmentId       String
+  designation        InstructorRole    @default(LECTURER)
+  specializations    String?          // JSON string array
+  maxHoursPerWeek    Int               @default(20)
+  preferredSlots     String?          // JSON string array of time slot IDs
+  unavailableSlots   String?          // JSON string array of time slot IDs
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+
+  // Relations
+  department Department @relation(fields: [departmentId], references: [id], onDelete: Cascade)
+  classes    Class[]
+  
+  @@map("instructors")
+}
+
+model Room {
+  id         String     @id @default(cuid())
+  number     String     @unique
+  name       String
+  building   String
+  capacity   Int
+  type       RoomType   @default(CLASSROOM)
+  facilities String?   // JSON string array
+  isActive   Boolean    @default(true)
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+
+  // Relations
+  classes Class[]
+  
+  @@map("rooms")
+}
+
+model TimeSlot {
+  id        String @id @default(cuid())
+  dayOfWeek Int    // 0=Sunday, 1=Monday, etc.
+  startTime String // HH:MM format
+  endTime   String // HH:MM format
+  duration  Int    // in minutes
+  period    Int    // period number
+  isActive  Boolean @default(true)
+  
+  // Relations
+  classes Class[]
+  
+  @@map("time_slots")
+}
+
+model Class {
+  id               String   @id @default(cuid())
+  courseId         String
+  instructorId     String
+  roomId           String?
+  timeSlotId       String?
+  section          String
+  enrolledStudents Int
+  maxStudents      Int
+  semester         Int
+  year             Int
+  isScheduled      Boolean  @default(false)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  // Relations
+  course     Course     @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  instructor Instructor @relation(fields: [instructorId], references: [id], onDelete: Cascade)
+  room       Room?      @relation(fields: [roomId], references: [id])
+  timeSlot   TimeSlot?  @relation(fields: [timeSlotId], references: [id])
+  
+  @@map("classes")
+}
+
+model Schedule {
+  id                String        @id @default(cuid())
+  name              String
+  semester          Int
+  year              Int
+  academicYear      String
+  status            ScheduleStatus @default(DRAFT)
+  optimizationScore Float?
+  createdBy         String
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  // Relations
+  scheduledClasses ScheduledClass[]
+  
+  @@map("schedules")
+}
+
+model ScheduledClass {
+  id               String   @id @default(cuid())
+  scheduleId       String
+  classId          String
+  courseId         String
+  instructorId     String
+  roomId           String
+  timeSlotId       String
+  dayOfWeek        Int
+  startTime        String
+  endTime          String
+  duration         Int
+  section          String
+  enrolledStudents Int
+  createdAt        DateTime @default(now())
+
+  // Relations
+  schedule Schedule @relation(fields: [scheduleId], references: [id], onDelete: Cascade)
+  
+  @@map("scheduled_classes")
+}
+
+model Constraint {
+  id          String           @id @default(cuid())
+  name        String
+  description String
+  type        ConstraintType   @default(HARD)
+  category    ConstraintCategory @default(INSTRUCTOR)
+  priority    Int              @default(5)
+  parameters  String           // JSON object
+  isActive    Boolean          @default(true)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  
+  @@map("constraints")
+}
+
+model User {
+  id         String   @id @default(cuid())
+  email      String   @unique
+  name       String
+  role       UserRole @default(VIEWER)
+  department String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  
+  @@map("users")
+}
+
+model TimetableGeneration {
+  id                String               @id @default(cuid())
+  name              String
+  department        String
+  semester          Int
+  year              Int
+  status            GenerationStatus     @default(PENDING)
+  progress          Int                  @default(0)
+  currentStep       String?
+  config            String               // JSON configuration
+  results           String?              // JSON results
+  errorMessage      String?
+  generationTime    Int?                 // milliseconds
+  createdBy         String
+  createdAt         DateTime             @default(now())
+  updatedAt         DateTime             @updatedAt
+  
+  @@map("timetable_generations")
+}
+
+// Enums
+enum CourseType {
+  CORE
+  ELECTIVE
+  LAB
+  PROJECT
+  INTERNSHIP
+}
+
+enum InstructorRole {
+  PROFESSOR
+  ASSOCIATE_PROFESSOR
+  ASSISTANT_PROFESSOR
+  LECTURER
+}
+
+enum RoomType {
+  CLASSROOM
+  LAB
+  AUDITORIUM
+  SEMINAR_HALL
+}
+
+enum ScheduleStatus {
+  DRAFT
+  PENDING_APPROVAL
+  APPROVED
+  PUBLISHED
+  ARCHIVED
+}
+
+enum ConstraintType {
+  HARD
+  SOFT
+}
+
+enum ConstraintCategory {
+  INSTRUCTOR
+  ROOM
+  COURSE
+  TIME
+  STUDENT
+  INSTITUTIONAL
+}
+
+enum UserRole {
+  ADMIN
+  FACULTY
+  COORDINATOR
+  VIEWER
+}
+
+enum GenerationStatus {
+  PENDING
+  RUNNING
+  COMPLETED
+  FAILED
+}
