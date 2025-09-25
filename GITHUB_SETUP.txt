@@ -1,0 +1,16 @@
+# GitHub Repository Setup Commands
+# Replace 'yourusername' with your actual GitHub username
+
+# 1. Add remote repository
+git remote add origin https://github.com/yourusername/ato-platform.git
+
+# 2. Set main branch and push
+git branch -M main
+git push -u origin main
+
+# 3. Verify everything is uploaded
+git remote -v
+git status
+
+# Alternative if you want to use SSH (after setting up SSH keys)
+# git remote add origin git@github.com:yourusername/ato-platform.git
