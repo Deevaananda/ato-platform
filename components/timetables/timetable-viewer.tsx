@@ -66,7 +66,7 @@ export function TimetableViewer() {
             Weekly Timetable - {selectedDepartment}
           </CardTitle>
           <CardDescription>
-            View the current week's class schedule
+            View the current week&rsquo;s class schedule
           </CardDescription>
         </CardHeader>
         <CardContent>

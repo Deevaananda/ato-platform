@@ -2,7 +2,7 @@
  * Database service using Prisma ORM
  */
 
-import { PrismaClient } from '@prisma/client'
+import { PrismaClient, CourseType } from '@prisma/client'
 
 // Singleton Prisma client
 let prisma: PrismaClient
@@ -28,6 +28,18 @@ export type DatabaseCourse = any
 export type DatabaseInstructor = any  
 export type DatabaseRoom = any
 export type DatabaseTimeSlot = any
+
+type SeedCourseDefinition = {
+  code: string
+  name: string
+  credits: number
+  semester: number
+  year: number
+  type: CourseType
+  description: string
+  maxStudents: number
+  prerequisites?: string[]
+}
 
 /**
  * Department operations
@@ -138,7 +150,7 @@ export class CourseService {
     
     return prisma.course.create({
       data: {
-        ...courseData,
+        ...(courseData as any),
         prerequisites: prerequisites ? JSON.stringify(prerequisites) : null
       },
       include: { department: true }
@@ -149,65 +161,140 @@ export class CourseService {
   }
 
   static async initializeDefaultData(): Promise<void> {
-    const existingCount = await prisma.course.count()
-    
-    if (existingCount === 0) {
-      const departments = await prisma.department.findMany()
-      const cseDept = departments.find(d => d.code === 'CSE')
-      const eceDept = departments.find(d => d.code === 'ECE') 
-      const mathDept = departments.find(d => d.code === 'MATH')
-      
-      if (cseDept && eceDept && mathDept) {
-        await prisma.course.createMany({
-          data: [
-            {
-              code: "CSE101",
-              name: "Introduction to Programming",
-              departmentId: cseDept.id,
-              credits: 4,
-              semester: 1,
-              year: 1,
-              type: "CORE",
-              description: "Basic programming concepts using C++",
-              maxStudents: 60,
-            },
-            {
-              code: "CSE201", 
-              name: "Data Structures and Algorithms",
-              departmentId: cseDept.id,
-              credits: 4,
-              semester: 3,
-              year: 2,
-              type: "CORE", 
-              description: "Fundamental data structures and algorithms",
-              prerequisites: JSON.stringify(["CSE101"]),
-              maxStudents: 60,
-            },
-            {
-              code: "ECE101",
-              name: "Circuit Analysis", 
-              departmentId: eceDept.id,
-              credits: 3,
-              semester: 1,
-              year: 1,
-              type: "CORE",
-              description: "Basic circuit analysis techniques",
-              maxStudents: 0, // To be configured per course
-            },
-            {
-              code: "MATH101",
-              name: "Calculus I",
-              departmentId: mathDept.id,
-              credits: 4,
-              semester: 1,
-              year: 1,
-              type: "CORE",
-              description: "Differential and integral calculus", 
-              maxStudents: 0, // To be configured per course
-            }
-          ]
-        })
+    const departments = await prisma.department.findMany()
+    if (departments.length === 0) {
+      return
+    }
+
+    const defaultCoursesByDept: Record<string, SeedCourseDefinition[]> = {
+      CSE: [
+        {
+          code: "CSE101",
+          name: "Introduction to Programming",
+          credits: 4,
+          semester: 1,
+          year: 1,
+          type: CourseType.CORE,
+          description: "Fundamentals of programming using C++ and problem-solving basics.",
+          maxStudents: 60,
+        },
+        {
+          code: "CSE201",
+          name: "Data Structures and Algorithms",
+          credits: 4,
+          semester: 3,
+          year: 2,
+          type: CourseType.CORE,
+          description: "Core data structures, algorithm analysis, and implementation patterns.",
+          maxStudents: 60,
+          prerequisites: ["CSE101"],
+        },
+        {
+          code: "CSE305",
+          name: "Database Management Systems",
+          credits: 3,
+          semester: 5,
+          year: 3,
+          type: CourseType.CORE,
+          description: "Relational databases, SQL, normalization, and transaction management.",
+          maxStudents: 55,
+          prerequisites: ["CSE201"],
+        },
+      ],
+      ECE: [
+        {
+          code: "ECE101",
+          name: "Circuit Analysis",
+          credits: 3,
+          semester: 1,
+          year: 1,
+          type: CourseType.CORE,
+          description: "Principles of electric circuits, Kirchhoff laws, and transient analysis.",
+          maxStudents: 60,
+        },
+        {
+          code: "ECE210",
+          name: "Signals and Systems",
+          credits: 4,
+          semester: 4,
+          year: 2,
+          type: CourseType.CORE,
+          description: "Continuous and discrete-time signals, Fourier analysis, and system modeling.",
+          maxStudents: 55,
+          prerequisites: ["ECE101"],
+        },
+      ],
+      ME: [
+        {
+          code: "ME101",
+          name: "Engineering Mechanics",
+          credits: 4,
+          semester: 1,
+          year: 1,
+          type: CourseType.CORE,
+          description: "Statics and dynamics fundamentals for mechanical systems.",
+          maxStudents: 60,
+        },
+        {
+          code: "ME220",
+          name: "Thermodynamics",
+          credits: 4,
+          semester: 3,
+          year: 2,
+          type: CourseType.CORE,
+          description: "Laws of thermodynamics, pure substances, and power cycles.",
+          maxStudents: 55,
+        },
+      ],
+      MATH: [
+        {
+          code: "MATH101",
+          name: "Calculus I",
+          credits: 4,
+          semester: 1,
+          year: 1,
+          type: CourseType.CORE,
+          description: "Differentiation, integration, and applications for single-variable calculus.",
+          maxStudents: 60,
+        },
+        {
+          code: "MATH205",
+          name: "Linear Algebra",
+          credits: 3,
+          semester: 3,
+          year: 2,
+          type: "CORE",
+          description: "Vector spaces, matrices, eigenvalues, and linear transformations.",
+          maxStudents: 55,
+        },
+      ],
+    }
+
+    for (const department of departments) {
+      const seedCourses = defaultCoursesByDept[department.code]
+      if (!seedCourses || seedCourses.length === 0) {
+        continue
       }
+
+      const existingForDepartment = await prisma.course.count({ where: { departmentId: department.id } })
+      if (existingForDepartment > 0) {
+        continue
+      }
+
+      await prisma.course.createMany({
+        data: seedCourses.map((course) => ({
+          departmentId: department.id,
+          code: course.code,
+          name: course.name,
+          credits: course.credits,
+          semester: course.semester,
+          year: course.year,
+          type: course.type,
+          description: course.description,
+          maxStudents: course.maxStudents,
+          prerequisites: course.prerequisites ? JSON.stringify(course.prerequisites) : null,
+        })),
+      })
     }
   }
 }
@@ -250,7 +337,7 @@ export class InstructorService {
     
     return prisma.instructor.create({
       data: {
-        ...instructorData,
+        ...(instructorData as any),
         specializations: specializations ? JSON.stringify(specializations) : null
       },
       include: { department: true }
@@ -338,7 +425,7 @@ export class RoomService {
     
     return prisma.room.create({
       data: {
-        ...roomData,
+        ...(roomData as any),
         facilities: facilities ? JSON.stringify(facilities) : null
       }
     }).then(room => ({

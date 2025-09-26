@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useEffect, useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -46,6 +46,8 @@ export function TimetableGenerator() {
   const [showInfeasibilityReport, setShowInfeasibilityReport] = useState(false)
   const [departments, setDepartments] = useState<Department[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const [warningMessage, setWarningMessage] = useState<string | null>(null)
 
   const [config, setConfig] = useState<GenerationConfig>({
     department: "",
@@ -60,28 +62,15 @@ export function TimetableGenerator() {
   useEffect(() => {
     const loadDepartments = async () => {
       setIsLoading(true)
+      setWarningMessage(null)
       try {
-        // Try API first, fallback to database service
-        try {
-          const response = await fetch('/api/departments')
-          if (response.ok) {
-            const result = await response.json()
-            setDepartments(result.data || [])
-            return
-          }
-        } catch (apiError) {
-          console.log("API not available, trying database service...")
+        const response = await fetch("/api/departments")
+        if (!response.ok) {
+          throw new Error("Failed to load departments")
         }
 
-        // Fallback to database service
-        const { DepartmentService, initializeDatabase } = await import("@/lib/database/database-service")
-        
-        // Initialize database if needed
-        await initializeDatabase()
-        
-        // Load departments
-        const depts = await DepartmentService.getAll()
-        setDepartments(depts)
+        const result = await response.json()
+        setDepartments(result.data || [])
       } catch (error) {
         console.error("Failed to load departments:", error)
         // Set some default departments for demo
@@ -91,6 +80,7 @@ export function TimetableGenerator() {
           { id: 'mech', name: 'Mechanical Engineering' },
           { id: 'civil', name: 'Civil Engineering' }
         ])
+        setWarningMessage("Unable to load departments from the server. Using sample data instead.")
       } finally {
         setIsLoading(false)
       }
@@ -102,8 +92,15 @@ export function TimetableGenerator() {
   const handleGenerate = async () => {
     console.log("[v0] Starting timetable generation with config:", config)
 
+    setErrorMessage(null)
+
     if (!config.department || !config.semester) {
-      console.log("[v0] Missing required configuration")
+      setErrorMessage("Please select both a department and semester before generating a timetable.")
+      return
+    }
+
+    if (!config.batchSize || config.batchSize <= 0) {
+      setErrorMessage("Batch size must be greater than zero.")
       return
     }
 
@@ -111,78 +108,60 @@ export function TimetableGenerator() {
     setGenerationProgress(0)
     setGeneratedOptions([])
     setShowInfeasibilityReport(false)
+    setCurrentStep("Submitting generation request...")
 
     try {
-      // Import optimization service
-      const { OptimizationService } = await import("@/lib/optimization/optimization-service")
-      const { 
-        DepartmentService, 
-        CourseService, 
-        InstructorService, 
-        RoomService, 
-        TimeSlotService 
-      } = await import("@/lib/database/database-service")
-      
-      // Load resources from database
-      const [departments, courses, instructors, rooms, timeSlots] = await Promise.all([
-        DepartmentService.getAll(),
-        CourseService.getAll(),
-        InstructorService.getAll(), 
-        RoomService.getAll(),
-        TimeSlotService.getAll()
-      ])
-      
-      // Prepare optimization request
-      const optimizationRequest = {
-        department: config.department,
-        semester: config.semester,
-        batchSize: config.batchSize,
-        subjects: config.subjects,
-        optimizationGoals: config.optimizationGoals,
-        maxIterations: config.maxIterations,
-        timeLimit: config.timeLimit
-      }
-      
-      // Run optimization
-      const results = await OptimizationService.generateTimetables(
-        optimizationRequest,
-        {
-          courses,
-          instructors,
-          rooms,
-          timeSlots,
-          constraints: [] // TODO: Load constraints from database
+      const response = await fetch("/api/timetables/generate", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
         },
-        (progress, step) => {
-          setGenerationProgress(progress)
-          setCurrentStep(step)
-        }
-      )
-      
-      // Convert results to expected format
-      const formattedOptions = results.map(result => ({
-        id: result.id,
-        name: result.name,
-        score: result.score,
-        conflicts: result.conflicts,
-        utilization: result.utilization,
-        facultyWorkload: result.facultyWorkload,
-        status: result.status as "optimal" | "good" | "acceptable" | "infeasible"
-      }))
-      
-      setGeneratedOptions(formattedOptions)
-      
-      // Show infeasibility report if needed
-      if (results.some(r => r.status === 'infeasible')) {
-        setShowInfeasibilityReport(true)
+        body: JSON.stringify(config),
+      })
+
+      if (!response.ok) {
+        const errorPayload = await response.json().catch(() => ({}))
+        throw new Error(errorPayload.error || "Failed to generate timetables")
       }
-      
+
+      const payload = await response.json()
+
+      if (Array.isArray(payload.progress) && payload.progress.length > 0) {
+        const latest = payload.progress[payload.progress.length - 1]
+        if (latest) {
+          setGenerationProgress(Math.min(100, Math.round(latest.progress)))
+          setCurrentStep(latest.step)
+        }
+      }
+
+      const formattedOptions: GenerationResult[] = Array.isArray(payload.data)
+        ? payload.data.map((result: any) => ({
+            id: result.id,
+            name: result.name,
+            score: result.score,
+            conflicts: result.conflicts,
+            utilization: result.utilization,
+            facultyWorkload: result.facultyWorkload,
+            status: (result.status ?? "infeasible") as "optimal" | "good" | "acceptable" | "infeasible",
+          }))
+        : []
+
+      setGeneratedOptions(formattedOptions)
+      setShowInfeasibilityReport(formattedOptions.some((r) => r.status === "infeasible"))
+      setGenerationProgress(100)
+      setCurrentStep("Generation completed!")
+
+      if (formattedOptions.length === 0) {
+        setErrorMessage("Generation completed but no timetable options were produced. Please review your configuration.")
+      }
     } catch (error) {
       console.error("[v0] Error during optimization:", error)
-      setShowInfeasibilityReport(true)
+      setShowInfeasibilityReport(false)
+      setGenerationProgress(0)
+      setCurrentStep("Generation failed")
+      setErrorMessage(error instanceof Error ? error.message : "Failed to generate timetable options")
     } finally {
       setIsGenerating(false)
-      setCurrentStep("Generation completed!")
       console.log("[v0] Timetable generation completed")
     }
   }
@@ -447,6 +426,20 @@ export function TimetableGenerator() {
             {isGenerating ? "Generating..." : "Generate Timetable Options"}
           </Button>
 
+          {errorMessage && (
+            <Alert variant="destructive" className="border-destructive/40 bg-destructive/5 text-destructive">
+              <AlertTriangle className="h-4 w-4" />
+              <AlertDescription>{errorMessage}</AlertDescription>
+            </Alert>
+          )}
+
+          {warningMessage && (
+            <Alert className="border-yellow-500/30 bg-yellow-500/5">
+              <AlertTriangle className="h-4 w-4 text-yellow-400" />
+              <AlertDescription className="text-yellow-400">{warningMessage}</AlertDescription>
+            </Alert>
+          )}
+
           {departments.length === 0 && (
             <Alert className="border-yellow-500/30 bg-yellow-500/5">
               <AlertTriangle className="h-4 w-4 text-yellow-400" />
@@ -557,7 +550,7 @@ export function TimetableGenerator() {
               <Settings className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
               <h3 className="text-lg font-semibold text-foreground mb-2">No Timetables Generated</h3>
               <p className="text-muted-foreground">
-                Configure your parameters and click "Generate Timetable Options" to create optimized timetables.
+                Configure your parameters and click &ldquo;Generate Timetable Options&rdquo; to create optimized timetables.
               </p>
             </div>
           </CardContent>

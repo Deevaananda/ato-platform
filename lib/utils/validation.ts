@@ -13,7 +13,7 @@ export const departmentSchema = z.object({
 export const courseSchema = z.object({
   code: z.string().min(1, "Course code is required").max(20),
   name: z.string().min(1, "Course name is required").max(255),
-  departmentId: z.string().uuid("Invalid department ID"),
+  departmentId: z.string().min(1, "Department is required"),
   credits: z.number().min(1, "Credits must be at least 1").max(10),
   semester: z.number().min(1, "Semester must be at least 1").max(8),
   year: z.number().min(1, "Year must be at least 1").max(4),
@@ -28,7 +28,7 @@ export const instructorSchema = z.object({
   employeeId: z.string().min(1, "Employee ID is required").max(20),
   name: z.string().min(1, "Name is required").max(255),
   email: z.string().email("Invalid email address"),
-  departmentId: z.string().uuid("Invalid department ID"),
+  departmentId: z.string().min(1, "Department is required"),
   designation: z.enum(["professor", "associate_professor", "assistant_professor", "lecturer"]),
   specializations: z.array(z.string()).min(1, "At least one specialization is required"),
   maxHoursPerWeek: z.number().min(1, "Max hours must be at least 1").max(40),
@@ -65,8 +65,8 @@ export const constraintSchema = z.object({
 
 // Class validation schema
 export const classSchema = z.object({
-  courseId: z.string().uuid("Invalid course ID"),
-  instructorId: z.string().uuid("Invalid instructor ID"),
+  courseId: z.string().min(1, "Course is required"),
+  instructorId: z.string().min(1, "Instructor is required"),
   section: z.string().min(1, "Section is required").max(10),
   maxStudents: z.number().min(1, "Max students must be at least 1"),
   semester: z.number().min(1).max(8),

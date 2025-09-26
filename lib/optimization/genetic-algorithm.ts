@@ -330,7 +330,7 @@ export class GeneticAlgorithmOptimizer {
     
     schedule.forEach(scheduledClass => {
       const room = this.resources.rooms.find(r => r.id === scheduledClass.roomId)
-      if (room && scheduledClass.enrolledStudents > room.capacity) {
+      if (room && room.capacity > 0 && scheduledClass.enrolledStudents > room.capacity) {
         violations.push({
           type: 'capacity',
           severity: 'hard',
@@ -347,8 +347,11 @@ export class GeneticAlgorithmOptimizer {
    * Calculate room utilization percentage
    */
   private calculateRoomUtilization(schedule: ScheduledClass[]): number {
-    const totalAvailableSlots = this.resources.rooms.length * this.resources.timeSlots.length * 5 // 5 days
+    const totalAvailableSlots = this.resources.rooms.length * this.resources.timeSlots.length
     const usedSlots = schedule.length
+    if (totalAvailableSlots === 0) {
+      return 0
+    }
     return Math.round((usedSlots / totalAvailableSlots) * 100)
   }
 
