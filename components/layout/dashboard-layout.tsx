@@ -9,12 +9,11 @@ import { Calendar, Users, Building, BookOpen, BarChart3, Settings, Menu, LogOut,
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
+import { ThemeToggleSimple } from "@/components/ui/theme-toggle"
 
 const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: Home },
   { name: "Resources", href: "/dashboard/resources", icon: Building },
-  { name: "Faculty", href: "/dashboard/faculty", icon: Users },
-  { name: "Subjects", href: "/dashboard/subjects", icon: BookOpen },
   { name: "Timetables", href: "/dashboard/timetables", icon: Calendar },
   { name: "Reports", href: "/dashboard/reports", icon: BarChart3 },
   { name: "Admin", href: "/dashboard/admin", icon: Settings },
@@ -27,11 +26,20 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
 
   const Sidebar = ({ mobile = false }: { mobile?: boolean }) => (
     <div className={cn("flex flex-col h-full", mobile ? "w-full" : "w-64")}>
-      <div className="flex items-center px-6 py-4 border-b border-border">
+      <div className="flex items-center justify-between px-6 py-4 border-b border-border">
         <h1 className="text-xl font-bold text-foreground">ATO Platform</h1>
+        <ThemeToggleSimple />
       </div>
 
       <nav className="flex-1 px-4 py-6 space-y-2">
+        {/* Theme Toggle in Navigation */}
+        <div className="pb-4 border-b border-border mb-4">
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-medium text-muted-foreground">Appearance</span>
+            <ThemeToggleSimple />
+          </div>
+        </div>
+        
         {navigation.map((item) => {
           const isActive = pathname === item.href
           return (

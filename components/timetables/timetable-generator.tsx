@@ -61,6 +61,19 @@ export function TimetableGenerator() {
     const loadDepartments = async () => {
       setIsLoading(true)
       try {
+        // Try API first, fallback to database service
+        try {
+          const response = await fetch('/api/departments')
+          if (response.ok) {
+            const result = await response.json()
+            setDepartments(result.data || [])
+            return
+          }
+        } catch (apiError) {
+          console.log("API not available, trying database service...")
+        }
+
+        // Fallback to database service
         const { DepartmentService, initializeDatabase } = await import("@/lib/database/database-service")
         
         // Initialize database if needed
@@ -71,7 +84,13 @@ export function TimetableGenerator() {
         setDepartments(depts)
       } catch (error) {
         console.error("Failed to load departments:", error)
-        setDepartments([])
+        // Set some default departments for demo
+        setDepartments([
+          { id: 'cse', name: 'Computer Science Engineering' },
+          { id: 'ece', name: 'Electrical & Electronics Engineering' },
+          { id: 'mech', name: 'Mechanical Engineering' },
+          { id: 'civil', name: 'Civil Engineering' }
+        ])
       } finally {
         setIsLoading(false)
       }

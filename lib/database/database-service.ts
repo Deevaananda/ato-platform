@@ -47,7 +47,11 @@ export class DepartmentService {
 
   static async create(data: Omit<DatabaseDepartment, 'id' | 'createdAt' | 'updatedAt'>): Promise<DatabaseDepartment> {
     return prisma.department.create({
-      data
+      data: {
+        name: data.name,
+        code: data.code,
+        ...data
+      }
     })
   }
 

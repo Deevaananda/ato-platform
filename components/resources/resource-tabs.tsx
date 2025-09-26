@@ -1,14 +1,22 @@
 "use client"
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { DepartmentManager } from "./department-manager"
+import { SubjectManager } from "./subject-manager"
 import { ClassroomManager } from "./classroom-manager"
 import { LaboratoryManager } from "./laboratory-manager"
 import { FacultyManager } from "./faculty-manager"
 
 export function ResourceTabs() {
   return (
-    <Tabs defaultValue="classrooms" className="space-y-6">
-      <TabsList className="grid w-full grid-cols-3 bg-muted">
+    <Tabs defaultValue="departments" className="space-y-6">
+      <TabsList className="grid w-full grid-cols-5 bg-muted">
+        <TabsTrigger value="departments" className="data-[state=active]:bg-background">
+          Departments
+        </TabsTrigger>
+        <TabsTrigger value="subjects" className="data-[state=active]:bg-background">
+          Subjects
+        </TabsTrigger>
         <TabsTrigger value="classrooms" className="data-[state=active]:bg-background">
           Classrooms
         </TabsTrigger>
@@ -19,6 +27,14 @@ export function ResourceTabs() {
           Faculty
         </TabsTrigger>
       </TabsList>
+
+      <TabsContent value="departments">
+        <DepartmentManager />
+      </TabsContent>
+
+      <TabsContent value="subjects">
+        <SubjectManager />
+      </TabsContent>
 
       <TabsContent value="classrooms">
         <ClassroomManager />

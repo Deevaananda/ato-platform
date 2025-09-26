@@ -7,7 +7,7 @@ export default function ResourcesPage() {
       <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-bold text-foreground">Resource Management</h1>
-          <p className="text-muted-foreground">Manage classrooms, laboratories, and faculty resources</p>
+          <p className="text-muted-foreground">Manage departments, subjects, classrooms, laboratories, and faculty resources</p>
         </div>
 
         <ResourceTabs />
